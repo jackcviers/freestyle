@@ -147,17 +147,17 @@ lazy val cacheJS  = cache.js
 lazy val config = jvmModule("config")
   .dependsOn(coreJVM)
   .settings(
-    fixResources := {
-      val testConf   = (resourceDirectory in Test).value / "application.conf"
-      val targetFile = (classDirectory in (coreJVM, Compile)).value / "application.conf"
-      if (testConf.exists) {
-        IO.copyFile(
-          testConf,
-          targetFile
-        )
-      }
-    },
-    compile in Test := ((compile in Test) dependsOn fixResources).value
+    // fixResources := {
+    //   val testConf   = (resourceDirectory in Test).value / "application.conf"
+    //   val targetFile = (classDirectory in Compile).value / "application.conf"
+    //   if (testConf.exists) {
+    //     IO.copyFile(
+    //       testConf,
+    //       targetFile
+    //     )
+    //   }
+    // },
+    // compile in Test := ((compile in Test) dependsOn fixResources).value
   )
   .settings(
     libraryDependencies ++= Seq(
@@ -198,6 +198,10 @@ lazy val jvmModules: Seq[ProjectReference] = Seq(
   // ,tests
 )
 
+lazy val jvmBob: Seq[ProjectReference] = Seq(
+  config
+)
+
 lazy val jsModules: Seq[ProjectReference] = Seq(
   coreJS,
   taglessJS,
@@ -214,8 +218,9 @@ lazy val allModules: Seq[ProjectReference] = jvmModules ++ jsModules
 lazy val jvmFreestyleDeps: Seq[ClasspathDependency] =
   jvmModules.map(ClasspathDependency(_, None))
 
-addCommandAlias("validateJVM", (toCompileTestList(jvmModules) ++ List("project root")).asCmd)
+addCommandAlias("validateJVM", (toCompileTestList(jvmBob) ++ List("project root")).asCmd)
 addCommandAlias("validateJS", (toCompileTestList(jsModules) ++ List("project root")).asCmd)
 addCommandAlias(
   "validate",
-  ";clean;compile;coverage;validateJVM;coverageReport;coverageAggregate;coverageOff")
+  // ";clean;compile;coverage;validateJVM;coverageReport;coverageAggregate;coverageOff")
+  ";clean;coverage;validateJVM;coverageReport;coverageAggregate;coverageOff")

@@ -55,7 +55,21 @@ class ConfigTests extends AsyncWordSpec with Matchers {
     }
 
     "allow configuration to load classpath files" in {
-      app.configM.load.interpret[Future] map { _.int("s") shouldBe Right(3) }
+      import com.typesafe.config.{ConfigException, ConfigFactory}
+      def urlses(cl: ClassLoader): Array[java.net.URL] = cl match {
+        case null                       => Array()
+        case u: java.net.URLClassLoader => u.getURLs() ++ urlses(cl.getParent)
+        case _                          => urlses(cl.getParent)
+      }
+
+      val urls = urlses(getClass.getClassLoader)
+
+      urls.map(println)
+      println(ConfigFactory.load())
+      val a = app.configM.load.interpret[Future]
+      println(a)
+
+      a map { _.int("s") shouldBe Right(3) }
     }
 
     "allow values to be read from a parsed config" in {

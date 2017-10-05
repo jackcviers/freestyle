@@ -81,7 +81,21 @@ object config {
     implicit def freestyleConfigHandler[M[_]](
         implicit ME: MonadError[M, Throwable]): ConfigM.Handler[M] =
       new ConfigM.Handler[M] {
-        def load: M[Config]  = ME.pure(underlying)
+        def load: M[Config] =
+          ME.pure({
+            def urlses(cl: ClassLoader): Array[java.net.URL] = cl match {
+              case null                       => Array()
+              case u: java.net.URLClassLoader => u.getURLs() ++ urlses(cl.getParent)
+              case _                          => urlses(cl.getParent)
+            }
+
+            val urls = urlses(getClass.getClassLoader)
+
+            urls.map(println)
+
+            println(ConfigFactory.load())
+            underlying
+          })
         def empty: M[Config] = ME.pure(loadConfig(ConfigFactory.empty()))
         def parseString(s: String): M[Config] =
           ME.catchNonFatal(loadConfig(ConfigFactory.parseString(s)))
